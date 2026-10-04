@@ -427,8 +427,8 @@
           <polyline class="series-shadow" points="${points}"/>
           <polyline class="series" points="${points}"/>
           ${values.map((value, i) => `<circle class="point ${i === lastRated ? "latest" : ""}" cx="${x(i)}" cy="${y(value)}" r="${i === lastRated ? 7 : 5}"><title>${i === 0 ? "起點" : `事件 ${i}`}：${signed(value)}</title></circle>`).join("")}
-          <text class="axis-label" x="${left}" y="365">遠離共和</text>
-          <text class="axis-label" x="${right}" y="365" text-anchor="end">走向共和</text>
+          <text class="axis-label" x="${left}" y="16" text-anchor="middle">走向共和</text>
+          <text class="axis-label" x="${left}" y="365" text-anchor="middle">遠離共和</text>
         `;
 
         chartLabels.innerHTML = `<span class="chart-event-label start" style="left:${(x(0) / chartWidth) * 100}%">起點</span>` + shortEvents.map((event, index) => `
