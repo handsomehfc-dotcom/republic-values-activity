@@ -184,8 +184,8 @@
         font-weight: 750;
       }
       .reset-btn:hover { background: #eef2f5; }
-      .chart-scroll { overflow-x: auto; padding-bottom: 4px; }
-      #chart { display: block; width: 1580px; height: 375px; }
+      .chart-scroll { overflow: hidden; padding-bottom: 4px; }
+      #chart { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 375; }
       .gridline { stroke: #ded9cf; stroke-width: 1; }
       .axisline { stroke: #94a0aa; stroke-width: 1.4; }
       .zeroline { stroke: #536b7e; stroke-width: 2; stroke-dasharray: 5 5; }
@@ -194,18 +194,19 @@
       .series { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
       .point { fill: var(--card); stroke: var(--blue); stroke-width: 3; }
       .point.latest { fill: var(--gold); stroke: var(--ink); }
-      .chart-labels { position: relative; width: 1580px; height: 126px; border-top: 1px solid #d8d3c8; }
+      .chart-labels { position: relative; width: 100%; height: 108px; border-top: 1px solid #d8d3c8; }
       .chart-event-label {
         position: absolute;
         top: 10px;
-        width: 98px;
+        width: 7%;
         transform: translateX(-50%);
         color: #536170;
-        font-size: .78rem;
+        font-size: clamp(.68rem, 1.05vw, .78rem);
         line-height: 1.35;
         text-align: center;
+        overflow-wrap: anywhere;
       }
-      .chart-event-label.start { width: 60px; font-weight: 800; }
+      .chart-event-label.start { width: 5%; font-weight: 800; }
       .chart-event-no {
         display: grid;
         place-items: center;
@@ -240,6 +241,17 @@
         th, td { padding: 11px 10px; }
         .score-picker { grid-template-columns: 42px 54px 42px; }
         .chart-card { padding: 15px 10px; }
+        .chart-labels { height: 102px; }
+        .chart-event-label:not(.start) {
+          top: 8px;
+          width: 6.5%;
+          max-height: 92px;
+          font-size: .72rem;
+          line-height: 1.2;
+          writing-mode: vertical-rl;
+          text-orientation: upright;
+        }
+        .chart-event-no { width: 19px; height: 19px; margin-bottom: 3px; font-size: .66rem; }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -300,8 +312,8 @@
             </div>
             <button class="reset-btn" id="reset" type="button">重新評分</button>
           </div>
-          <div class="chart-scroll" tabindex="0" aria-label="共和指數折線圖，可左右捲動">
-            <svg id="chart" viewBox="0 0 1580 375" role="img" aria-labelledby="chart-svg-title chart-svg-desc">
+          <div class="chart-scroll" aria-label="共和指數折線圖">
+            <svg id="chart" viewBox="0 0 1120 375" role="img" aria-labelledby="chart-svg-title chart-svg-desc">
               <title id="chart-svg-title">共和指數折線圖</title>
               <desc id="chart-svg-desc">折線由零開始，依照十四件歷史事件的評分逐步變化。</desc>
             </svg>
@@ -336,6 +348,23 @@
         "袁成立籌安會鼓吹君主立憲",
         "袁世凱稱帝",
         "護國之役爆發"
+      ];
+
+      const shortEvents = [
+        "民國成立",
+        "清帝退位",
+        "臨時總統",
+        "臨時約法",
+        "宋案",
+        "善後借款",
+        "二次革命",
+        "正式總統",
+        "解散國會",
+        "民國約法",
+        "二十一條",
+        "籌安會",
+        "袁稱帝",
+        "護國之役"
       ];
 
       const choices = [-3, -2, -1, 0, 1, 2, 3];
@@ -381,7 +410,8 @@
 
       function renderChart() {
         const values = [0, ...cumulativeScores()];
-        const left = 60, right = 1550, top = 25, bottom = 335;
+        const chartWidth = 1120;
+        const left = 55, right = 1090, top = 25, bottom = 335;
         const x = i => left + (i / 14) * (right - left);
         const y = value => top + ((10 - value) / 20) * (bottom - top);
         const gridValues = [10, 5, 0, -5, -10];
@@ -401,8 +431,8 @@
           <text class="axis-label" x="${right}" y="365" text-anchor="end">走向共和</text>
         `;
 
-        chartLabels.innerHTML = `<span class="chart-event-label start" style="left:${x(0)}px">起點</span>` + events.map((event, index) => `
-          <span class="chart-event-label" style="left:${x(index + 1)}px">
+        chartLabels.innerHTML = `<span class="chart-event-label start" style="left:${(x(0) / chartWidth) * 100}%">起點</span>` + shortEvents.map((event, index) => `
+          <span class="chart-event-label" style="left:${(x(index + 1) / chartWidth) * 100}%" title="${events[index]}">
             <b class="chart-event-no">${index + 1}</b>${event}
           </span>
         `).join("");
