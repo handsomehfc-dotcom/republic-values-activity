@@ -127,24 +127,39 @@
         font-variant-numeric: tabular-nums;
       }
       .event-title { font-weight: 700; }
-      .score-picker { display: flex; justify-content: center; gap: 5px; }
-      .score-btn {
-        width: 38px;
-        height: 38px;
-        border: 1px solid #b9c2ca;
-        border-radius: 7px;
-        color: var(--ink);
+      .score-picker {
+        display: inline-grid;
+        grid-template-columns: 44px 58px 44px;
+        align-items: stretch;
+        border: 1px solid #aeb8c0;
+        border-radius: 9px;
+        overflow: hidden;
         background: white;
-        cursor: pointer;
-        font-weight: 800;
-        transition: transform .12s ease, color .12s ease, border-color .12s ease, background .12s ease;
       }
-      .score-btn:hover { transform: translateY(-2px); border-color: var(--ink); }
-      .score-btn:focus-visible { outline: 3px solid rgba(47, 111, 159, .35); outline-offset: 2px; }
-      .score-btn[aria-pressed="true"] { color: white; border-color: transparent; box-shadow: inset 0 -2px rgba(0,0,0,.12); }
-      .score-btn.negative[aria-pressed="true"] { background: var(--red); }
-      .score-btn.zero[aria-pressed="true"] { background: var(--muted); }
-      .score-btn.positive[aria-pressed="true"] { background: var(--green); }
+      .step-btn {
+        min-height: 44px;
+        border: 0;
+        color: white;
+        cursor: pointer;
+        font-size: 1.35rem;
+        font-weight: 900;
+        transition: filter .12s ease, background .12s ease;
+      }
+      .step-btn.decrement { background: var(--red); }
+      .step-btn.increment { background: var(--green); }
+      .step-btn:hover:not(:disabled) { filter: brightness(.88); }
+      .step-btn:focus-visible { position: relative; z-index: 1; outline: 3px solid rgba(47, 111, 159, .45); outline-offset: -3px; }
+      .step-btn:disabled { background: #c8cdd1; cursor: not-allowed; }
+      .score-value {
+        display: grid;
+        place-items: center;
+        min-height: 44px;
+        border-left: 1px solid #d7dde1;
+        border-right: 1px solid #d7dde1;
+        font-size: 1.15rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+      }
 
       .chart-card { padding: 20px; }
       .chart-topline {
@@ -170,16 +185,39 @@
       }
       .reset-btn:hover { background: #eef2f5; }
       .chart-scroll { overflow-x: auto; padding-bottom: 4px; }
-      #chart { display: block; width: 100%; min-width: 900px; height: auto; }
+      #chart { display: block; width: 1580px; height: 375px; }
       .gridline { stroke: #ded9cf; stroke-width: 1; }
       .axisline { stroke: #94a0aa; stroke-width: 1.4; }
       .zeroline { stroke: #536b7e; stroke-width: 2; stroke-dasharray: 5 5; }
       .axis-label { fill: #657383; font-size: 12px; font-weight: 700; }
-      .x-label { fill: #536170; font-size: 11px; font-weight: 800; }
       .series-shadow { fill: none; stroke: rgba(16, 40, 63, .11); stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
       .series { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
       .point { fill: var(--card); stroke: var(--blue); stroke-width: 3; }
       .point.latest { fill: var(--gold); stroke: var(--ink); }
+      .chart-labels { position: relative; width: 1580px; height: 126px; border-top: 1px solid #d8d3c8; }
+      .chart-event-label {
+        position: absolute;
+        top: 10px;
+        width: 98px;
+        transform: translateX(-50%);
+        color: #536170;
+        font-size: .78rem;
+        line-height: 1.35;
+        text-align: center;
+      }
+      .chart-event-label.start { width: 60px; font-weight: 800; }
+      .chart-event-no {
+        display: grid;
+        place-items: center;
+        width: 23px;
+        height: 23px;
+        margin: 0 auto 5px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: white;
+        font-size: .72rem;
+        font-weight: 900;
+      }
       .chart-caption { margin: 10px 0 0; color: var(--muted); font-size: .9rem; }
       .legend { display: flex; flex-wrap: wrap; gap: 12px 22px; margin-top: 16px; color: var(--muted); font-size: .9rem; }
       .legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -200,8 +238,7 @@
         .table-shell { overflow-x: auto; }
         table { min-width: 720px; }
         th, td { padding: 11px 10px; }
-        .score-picker { gap: 3px; }
-        .score-btn { width: 36px; height: 36px; }
+        .score-picker { grid-template-columns: 42px 54px 42px; }
         .chart-card { padding: 15px 10px; }
       }
 
@@ -235,7 +272,7 @@
             <p class="section-kicker">第一部分</p>
             <h2 id="events-title">為每件事件評分</h2>
           </div>
-          <p class="section-help">−3＝嚴重破壞共和　0＝影響中性　+3＝大力推動共和</p>
+          <p class="section-help">按「−」或「＋」每次調整 1 分（−3 至 +3）</p>
         </div>
         <div class="table-shell">
           <table>
@@ -264,12 +301,13 @@
             <button class="reset-btn" id="reset" type="button">重新評分</button>
           </div>
           <div class="chart-scroll" tabindex="0" aria-label="共和指數折線圖，可左右捲動">
-            <svg id="chart" viewBox="0 0 980 420" role="img" aria-labelledby="chart-svg-title chart-svg-desc">
+            <svg id="chart" viewBox="0 0 1580 375" role="img" aria-labelledby="chart-svg-title chart-svg-desc">
               <title id="chart-svg-title">共和指數折線圖</title>
               <desc id="chart-svg-desc">折線由零開始，依照十四件歷史事件的評分逐步變化。</desc>
             </svg>
+            <div class="chart-labels" id="chart-labels" aria-label="折線圖事件名稱"></div>
           </div>
-          <p class="chart-caption">橫軸數字對應上表事件。累積指數到達上限或下限後，會維持在 +10 或 −10。</p>
+          <p class="chart-caption">每個節點下方列出對應事件。累積指數到達上限或下限後，會維持在 +10 或 −10。</p>
           <div class="legend" aria-hidden="true">
             <span><i class="dot up"></i>推動共和</span>
             <span><i class="dot same"></i>影響中性</span>
@@ -304,6 +342,7 @@
       const scores = Array(events.length).fill(null);
       const tbody = document.querySelector("#events-body");
       const chart = document.querySelector("#chart");
+      const chartLabels = document.querySelector("#chart-labels");
       const resultNumber = document.querySelector("#result-number");
       const completion = document.querySelector("#completion");
       const liveResult = document.querySelector("#live-result");
@@ -323,7 +362,9 @@
             </td>
             <td>
               <div class="score-picker" role="group" aria-label="事件 ${index + 1}：${event} 的共和指數變化">
-                ${choices.map(value => `<button type="button" class="score-btn ${value < 0 ? "negative" : value > 0 ? "positive" : "zero"}" data-event="${index}" data-score="${value}" aria-pressed="false" aria-label="${signed(value)}">${signed(value)}</button>`).join("")}
+                <button type="button" class="step-btn decrement" data-event="${index}" data-delta="-1" aria-label="事件 ${index + 1} 減 1 分">−</button>
+                <output class="score-value" id="score-${index}" aria-label="目前分數">0</output>
+                <button type="button" class="step-btn increment" data-event="${index}" data-delta="1" aria-label="事件 ${index + 1} 加 1 分">＋</button>
               </div>
             </td>
           </tr>
@@ -340,7 +381,7 @@
 
       function renderChart() {
         const values = [0, ...cumulativeScores()];
-        const left = 60, right = 952, top = 25, bottom = 350;
+        const left = 60, right = 1550, top = 25, bottom = 335;
         const x = i => left + (i / 14) * (right - left);
         const y = value => top + ((10 - value) / 20) * (bottom - top);
         const gridValues = [10, 5, 0, -5, -10];
@@ -353,13 +394,18 @@
           ${gridValues.map(value => `<line class="${value === 0 ? "zeroline" : "gridline"}" x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}"/><text class="axis-label" x="46" y="${y(value) + 4}" text-anchor="end">${signed(value)}</text>`).join("")}
           <line class="axisline" x1="${left}" x2="${left}" y1="${top}" y2="${bottom}"/>
           <line class="axisline" x1="${left}" x2="${right}" y1="${bottom}" y2="${bottom}"/>
-          ${Array.from({length: 15}, (_, i) => `<text class="x-label" x="${x(i)}" y="378" text-anchor="middle">${i === 0 ? "起點" : i}</text>`).join("")}
           <polyline class="series-shadow" points="${points}"/>
           <polyline class="series" points="${points}"/>
           ${values.map((value, i) => `<circle class="point ${i === lastRated ? "latest" : ""}" cx="${x(i)}" cy="${y(value)}" r="${i === lastRated ? 7 : 5}"><title>${i === 0 ? "起點" : `事件 ${i}`}：${signed(value)}</title></circle>`).join("")}
-          <text class="axis-label" x="${left}" y="410">遠離共和</text>
-          <text class="axis-label" x="${right}" y="410" text-anchor="end">走向共和</text>
+          <text class="axis-label" x="${left}" y="365">遠離共和</text>
+          <text class="axis-label" x="${right}" y="365" text-anchor="end">走向共和</text>
         `;
+
+        chartLabels.innerHTML = `<span class="chart-event-label start" style="left:${x(0)}px">起點</span>` + events.map((event, index) => `
+          <span class="chart-event-label" style="left:${x(index + 1)}px">
+            <b class="chart-event-no">${index + 1}</b>${event}
+          </span>
+        `).join("");
 
         const finalScore = values[values.length - 1];
         resultNumber.textContent = signed(finalScore);
@@ -374,16 +420,17 @@
           throw new Error("事件編號或分數無效");
         }
         scores[index] = value;
-        document.querySelectorAll(`[data-event="${index}"]`).forEach(button => {
-          button.setAttribute("aria-pressed", Number(button.dataset.score) === value ? "true" : "false");
-        });
+        document.querySelector(`#score-${index}`).textContent = signed(value);
+        document.querySelector(`[data-event="${index}"][data-delta="-1"]`).disabled = value <= -3;
+        document.querySelector(`[data-event="${index}"][data-delta="1"]`).disabled = value >= 3;
         renderChart();
         if (announce) liveResult.textContent = `事件 ${index + 1} 已評為 ${signed(value)}。目前共和指數 ${resultNumber.textContent}。`;
       }
 
       function resetScores() {
         scores.fill(null);
-        document.querySelectorAll(".score-btn").forEach(button => button.setAttribute("aria-pressed", "false"));
+        document.querySelectorAll(".score-value").forEach(output => output.textContent = "0");
+        document.querySelectorAll(".step-btn").forEach(button => button.disabled = false);
         renderChart();
         liveResult.textContent = "所有評分已重設。";
       }
@@ -392,9 +439,11 @@
       renderChart();
 
       tbody.addEventListener("click", event => {
-        const button = event.target.closest(".score-btn");
+        const button = event.target.closest(".step-btn");
         if (!button) return;
-        setScore(Number(button.dataset.event), Number(button.dataset.score));
+        const index = Number(button.dataset.event);
+        const current = scores[index] ?? 0;
+        setScore(index, Math.max(-3, Math.min(3, current + Number(button.dataset.delta))));
       });
       document.querySelector("#reset").addEventListener("click", resetScores);
 
